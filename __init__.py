@@ -47,19 +47,19 @@ class xNormal_Preferences(AddonPreferences):
     name = "Image format",
     description = "")
     sample_size: EnumProperty(items = image_size, name = "Sample Bake Size", default = "512")
-    output: StringProperty(name = "Export path",description = "File location for exporting .obj and saving maps",default = """./Textures/Bakes/""")
-    file_overwrite: BoolProperty(name = "Allow file overwrite", description = "If enabled, meshes will always be exported. Otherwise, they will only be exported if they do not currently exist in the output directory", default = True)
-    visible_highpoly_settings: BoolProperty(name = "Highpoly Settings", default = False)
-    visible_lowpoly_settings: BoolProperty(name = "Lowpoly Settings", default = False)
-    visible_image_settings: BoolProperty(name = "Image Settings", default = False)
+    output: StringProperty(name = "Export path", description = "Location for exporting maps", default = """./Textures/Bakes/""")
+    hipoly_dir: StringProperty(name = "Hipoly path", default = "Highpoly")
+    lowpoly_dir: StringProperty(name = "Lowpoly path", default = "Lowpoly")
     
     def draw(self, context):
         layout = self.layout
-        layout.prop(self,'execute_path')
-        layout.prop(self,'img_format')
-        layout.prop(self,'output')
-        layout.prop(self,'file_overwrite')
-        layout.prop(self,'sample_size')
+        layout.prop(self, 'execute_path')
+        layout.prop(self, 'img_format')
+        layout.prop(self, 'output')
+        row = layout.row()
+        row.prop(self, 'hipoly_dir')
+        row.prop(self, 'lowpoly_dir')
+        layout.prop(self, 'sample_size')
 
 classes = [
     xNormal_Preferences,

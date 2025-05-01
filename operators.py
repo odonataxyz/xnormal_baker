@@ -37,7 +37,7 @@ class ExportOperation():
         proj_name = conf.name
         app_conf = get_prefs()
         xml_file =  os.path.join(export_path, proj_name) + '.xml'
-        export_objects = write_xml(conf, open(xml_file, 'w'), export_dir = export_path)
+        export_objects = write_xml(self, conf, open(xml_file, 'w'), export_dir = export_path)
 
         #一時コレクション
         collection = xnormal_collection()

@@ -1,4 +1,4 @@
-import bpy, bpy.utils.previews, os
+import bpy, os
 from functools import reduce
 from xml.etree.ElementTree import Element, SubElement, tostring
 from xml.dom import minidom
@@ -29,18 +29,19 @@ def get_export_root():
     return export_path
     
 def get_directories(data_path:str):
+    app_conf = get_prefs()
     export_path = realpath(data_path)
     if not os.path.exists(export_path): os.makedirs(export_path)
 
-    highpoly_path = realpath(os.path.join(export_path, "Highpoly"))
+    highpoly_path = realpath(os.path.join(export_path, app_conf.hipoly_dir))
     if not os.path.exists(highpoly_path) : os.makedirs(highpoly_path)
     
-    lowpoly_path = realpath(os.path.join(export_path, "Lowpoly"))
+    lowpoly_path = realpath(os.path.join(export_path, app_conf.lowpoly_dir))
     if not os.path.exists(lowpoly_path) : os.makedirs(lowpoly_path)
 
     return export_path, highpoly_path, lowpoly_path
 
-def write_xml(conf:SettingItem, xml_file, export_dir = ''):
+def write_xml(op:Operator, conf:SettingItem, xml_file, export_dir = ''):
     app_conf = get_prefs()
 
     export_path, highpoly_path, lowpoly_path = get_directories(export_dir)
@@ -82,7 +83,9 @@ def write_xml(conf:SettingItem, xml_file, export_dir = ''):
     
     for lowpoly in lowpolies :
         obj = lowpoly.object
-        if obj is None or obj.type != 'MESH' : continue
+        if obj is None or obj.type != 'MESH' :
+            op.report({'ERROR'}, "Lowpoly object is not a Mesh!")
+            continue
 
         cage_opt:xNormal_CageSettings = lowpoly.cage
         cage_enabled = cage_opt.enabled
@@ -92,13 +95,22 @@ def write_xml(conf:SettingItem, xml_file, export_dir = ''):
                 cage_enabled = cage_opt.object is not None and cage_opt.object.type == 'MESH'
                 if cage_enabled:
                     export_objects.append(([cage_opt.object], cage_filepath, 'LOW', None))
+                else :
+                    if cage_opt.object is None:
+                        op.report({'ERROR'}, "Cage object not found! %s" % obj.name)
+                    else :
+                        op.report({'ERROR'}, "Cage object is not a Mesh! %s" % obj.name)
             elif cage_opt.type == cage_type[1][0]: #FILE
                 cage_filepath = cage_opt.cage_file
                 cage_enabled = os.path.exists(cage_filepath)
+                if not cage_enabled:
+                    op.report({'ERROR'}, "Cage file not found! %s" % obj.name)
             elif cage_opt.type == cage_type[2][0]: #SHAPEKEY
                 cage_enabled = cage_opt.shape_key and obj.data.shape_keys is not None and cage_opt.shape_key in obj.data.shape_keys.key_blocks
                 if cage_enabled:
                     export_objects.append(([obj], cage_filepath, 'LOW', cage_opt.shape_key))
+                else :
+                    op.report({'ERROR'}, "Cage shape key not found! %s" % obj.name)
                 
         
         filepath = os.path.join(lowpoly_path, obj.name + '.obj')
