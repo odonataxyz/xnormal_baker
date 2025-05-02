@@ -25,8 +25,6 @@ One of the standout features of `xNormal Baker` is the ability to use **shape ke
 To install `xNormal Baker` as a Blender addon, follow these steps:
 
 1. **アドオンをダウンロード (Download the Addon)**  
-   - [GitHubリポジトリ](https://github.com/your-repo/xnormal_baker)にアクセス  
-     Go to the [GitHub repository](https://github.com/your-repo/xnormal_baker).
    - 緑色の「Code」ボタンをクリックし、「Download ZIP」を選択  
      Click the green "Code" button and select "Download ZIP".
    - ZIPファイルをローカル保存します  
