@@ -12,22 +12,37 @@ def xnormal_collection():
 		bpy.context.scene.collection.children.link(collection)
 	return collection
 
-def snapshot_mesh(context:Context, ob:Object, rm_materials:list[Material], shapekey:str = None, shapekey_value = 1.0):
+def snapshot_mesh(context:Context, ob:Object, rm_materials:list[Material], shapekey:str = None, uv:str = None):
 	ob_name = ob.name
-	context_override = {
-		'active_object':ob,
-		'object':ob,
-		'selected_objects':[ob],
-	}
-	with bpy.context.temp_override(**context_override):
-		before = set(bpy.context.scene.objects)
+	collection = xnormal_collection()
+	# 一時コレクションにリンクしておく
+	if ob.name not in collection.objects:
+		collection.objects.link(ob)
+
+	for o in bpy.context.scene.objects:
+		o.hide_set(o != ob)
+		o.select_set(o == ob)
+	context.view_layer.objects.active = ob
+	before = set(bpy.context.scene.objects)
+	
+	if ob.type == 'MESH':
 		bpy.ops.object.duplicate()
-		after = set(bpy.context.scene.objects)
-		
-		duplicated_objs = after - before
-		ob = list(duplicated_objs)[0]
+	else : #非メッシュならコンバート
+		bpy.ops.object.convert(target='MESH', keep_original=True, merge_customdata=True)
+
+	after = set(bpy.context.scene.objects)
+
+	duplicated_objs = after - before
+	if not len(duplicated_objs): return None
+	ob = list(duplicated_objs)[0]
 	
 	mesh:Mesh = ob.data
+
+	uvs = mesh.uv_layers.keys()
+	if uv and uv in uvs:
+		for uv_layer in uvs:
+			if uv_layer != uv:
+				mesh.uv_layers.remove(mesh.uv_layers[uv_layer])
 
 	has_shape = shapekey is not None and mesh.shape_keys is not None and shapekey in mesh.shape_keys.key_blocks
 	if has_shape:
@@ -42,8 +57,8 @@ def snapshot_mesh(context:Context, ob:Object, rm_materials:list[Material], shape
 	bmesh.ops.triangulate(bm, faces=[f for f in bm.faces if len(f.verts) > 4], quad_method='BEAUTY', ngon_method='BEAUTY')
 	
 	#シェイプキーベイク
-	if has_shape and shapekey_value > 0.0:
-		mesh.shape_keys.key_blocks[shapekey].value = shapekey_value
+	if has_shape:
+		mesh.shape_keys.key_blocks[shapekey].value = 1.0
 		shape_bm = bmesh.new()
 		shape_bm.from_object(ob, context.evaluated_depsgraph_get())
 		
@@ -59,6 +74,7 @@ def snapshot_mesh(context:Context, ob:Object, rm_materials:list[Material], shape
 	name = ob_name + "_xNormal"
 	snap_mesh = bpy.data.meshes.new(name)
 	snap_ob = bpy.data.objects.new(name, snap_mesh)
+	snap_ob.matrix_world = ob.matrix_world.copy()
 
 	bm.to_mesh(snap_mesh)
 	

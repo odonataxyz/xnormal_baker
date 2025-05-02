@@ -24,10 +24,6 @@ class XNORMAL_UL_HighpolyList(UIList):
                 row.label(text="Object Missing!", icon='ERROR')
             else:
                 row.label(text = item.object.name, icon="OBJECT_DATA")
-                row.scale_x = 0.2
-                row.prop(item, 'group', emboss=False, text='')
-                
-                row.scale_x = 1.0
                 row.prop(item, 'export', icon='EXPORT', text='')
 
                 multires = [m for m in obj.modifiers if m.type == 'MULTIRES']
@@ -54,7 +50,7 @@ class XNORMAL_UL_HighpolyList(UIList):
 
 
 class XNORMAL_UL_LowpolyList(UIList):
-    def draw_item(self, context:Context, layout, data, item, icon, active_data, active_propname, index):
+    def draw_item(self, context:Context, layout:UILayout, data, item, icon, active_data, active_propname, index):
         scene = context.scene
         if self.layout_type in {'DEFAULT', 'COMPACT'}:
             col = layout.column()
@@ -67,9 +63,6 @@ class XNORMAL_UL_LowpolyList(UIList):
             if obj is None:
                 row.label(text="Object Missing!", icon='ERROR')
                 return
-            elif obj.type != 'MESH':
-                row.label(text="Object is not Mesh!", icon='ERROR')
-                return
             else:
                 row.label(text=item.object.name, icon="OBJECT_DATA")
                 row.prop(item, 'export', icon='EXPORT', text='')
@@ -80,7 +73,11 @@ class XNORMAL_UL_LowpolyList(UIList):
                 cage_opt:xNormal_CageSettings = item.cage
                 split = col.split(factor=0.9, align=False)
                 column = split.column(align=False)
-                column.prop(item, 'object', text="", icon="OBJECT_DATA")
+
+                row = column.row()
+                row.prop(item, 'object', text="", icon="OBJECT_DATA")
+                if obj is not None and obj.type == 'MESH':
+                    row.prop_search(item, 'uv', obj.data, 'uv_layers', text = 'UV', icon = "GROUP_UVS")
                 
                 row = column.row()
                 row.prop(item, 'batch')
@@ -89,11 +86,12 @@ class XNORMAL_UL_LowpolyList(UIList):
                 row.prop(item, 'match_uvs')
                 row.prop(item, 'normals_override', text = 'High poly normals override')
                 
-                row = column.row()
-                row.prop(cage_opt, 'enabled')
+
+                box = column.box()
+                box.prop(cage_opt, 'enabled')
                 if cage_opt.enabled:
-                    row.prop(cage_opt, 'type', text = "Use external cage file")
-                    row = column.row()
+                    row = box.row()
+                    row.prop(cage_opt, 'type', text = "Type")
                     if cage_opt.type == cage_type[0][0]: #OBJECT
                         row.prop_search(cage_opt, 'object', scene,'objects', icon = "OBJECT_DATA")
                     elif cage_opt.type == cage_type[1][0]: #FILE
@@ -133,15 +131,11 @@ class XNORMAL_OT_AddHighpoly(Operator, UIListOperator):
     def execute(self, context):
         conf = context.scene.xnormal_settings
         item = conf.settings[conf.active_index]
-        group_max = max([h.group for h in item.highpoly] + [0])
         exists = [h.object for h in item.highpoly]
-        index = 1
         for obj in context.selected_objects :
             if obj in exists: continue
             highpoly = item.highpoly.add()
             highpoly.object = obj
-            highpoly.group = group_max + index
-            index+=1
         return {'FINISHED'}
 
 class XNORMAL_OT_RemoveHighpoly(Operator, UIListOperator):
@@ -162,7 +156,7 @@ class XNORMAL_OT_AddLowpoly(Operator, UIListOperator):
         item = conf.settings[conf.active_index]
         exists = [h.object for h in item.lowpoly]
         for obj in context.selected_objects :
-            if obj.type != 'MESH' or obj in exists : continue
+            if obj in exists : continue
             lowpoly = item.lowpoly.add()
             lowpoly.object = obj
         return {'FINISHED'}

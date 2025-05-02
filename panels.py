@@ -94,7 +94,7 @@ class XNORMAL_PT_Panel(Panel):
         mats:set[Material] = set()
         for lowpoly in conf.lowpoly:
             lp_obj:Object = lowpoly.object
-            if lp_obj is None or lp_obj.type != 'MESH': continue
+            if lp_obj is None or lp_obj.material_slots is None: continue
             for matslot in lp_obj.material_slots:
                 if matslot.material is None: continue
                 mats.add(matslot.material)

@@ -21,6 +21,7 @@ class xNormal_LowpolySettings(PropertyGroup):
     object: PointerProperty(name='Object', type=Object)
     export: BoolProperty(name='Export', default=True)
     cage: PointerProperty(type = xNormal_CageSettings)
+    uv: StringProperty(name='UV Map', default='')
     visible: BoolProperty(name = 'Visible', default = True)
     show_expands: BoolProperty(name = 'Expands', default = False)
     max_front_ray: FloatProperty(name = 'Maximum frontal ray distance', default = 0.5,min=0)
@@ -36,7 +37,6 @@ class xNormal_LowpolySettings(PropertyGroup):
     
 class xNormal_HighpolySettings(PropertyGroup):
     export: BoolProperty(name='Export', default=True)
-    group: IntProperty(name='Group', default=1,min=1)
     object: PointerProperty(name='Object', type=Object)
     use_selection: BoolProperty(name = 'Use Selection', default = False)
     visible: BoolProperty(name = 'Visible', default = True)
