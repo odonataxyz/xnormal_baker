@@ -1,4 +1,5 @@
 # xNormal Baker
+[https://www.youtube.com/watch?v=AjaEhmxSw_k](https://www.youtube.com/watch?v=AjaEhmxSw_k)  
 
 ## 概要 (Overview)
 `xNormal Baker`はxNormalでのテクスチャベイクを自動化するBlenderアドオンです  
