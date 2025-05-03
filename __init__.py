@@ -14,7 +14,7 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
 bl_info = {
     "name": "xNormal Baker",
     "author": "odonata",
-    "version": (1, 0, 0),
+    "version": (1, 0, 1),
     "blender": (4, 0, 0),
     "location": "Properties > Render > Bake - xNormal",
     "description": "Texture baking with xNormal.",

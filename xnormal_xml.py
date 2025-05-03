@@ -56,13 +56,13 @@ def export_obj(context:Context, objects:list[Object], filepath:str, type:str, ig
     is_snapshot = type == "LOW"
 
     # 解像度モディファイア切り替え
-    multires_mods:dict[MultiresModifier, int] = {}
+    multires_mods:dict[MultiresModifier, bool] = {}
     for ob in objects:
         for modifier in ob.modifiers:
             if modifier.type != 'MULTIRES': continue
 
-            multires_mods[modifier] = modifier.levels
-            modifier.levels = 0 if type == "LOW" else modifier.total_levels
+            multires_mods[modifier] = modifier.show_viewport
+            modifier.show_viewport = type == "HIGH"
     
     if is_snapshot:
         snapshots = [snapshot_mesh(context, o, ignore_materials, shapekey, uv) for o in objects]
@@ -101,8 +101,8 @@ def export_obj(context:Context, objects:list[Object], filepath:str, type:str, ig
         smooth_group_bitflags=False
     )
 
-    for multires, level in multires_mods.items() :
-        multires.levels = level
+    for multires, show in multires_mods.items() :
+        multires.show_viewport = show
     
     #スナップショットメッシュの解消
     if is_snapshot:
